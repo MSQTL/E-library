@@ -9,9 +9,10 @@ public class MainFrame extends JFrame {
     String user = "root";
     String password = "2802";
     Connection connection;
-    Statement stmt;
-    ResultSet rs;
+    Statement statement;
+    ResultSet resultSet;
     String query;
+    StringBuilder inputPassword = new StringBuilder();
     AuthorizationPanel authorizationPanel = new AuthorizationPanel();
     AdminPanel adminPanel = new AdminPanel();
     UserPanel userPanel = new UserPanel();
@@ -19,8 +20,10 @@ public class MainFrame extends JFrame {
     Box horizontalBox = Box.createHorizontalBox();
     public MainFrame(){
 
-        setTitle("Авторизация");
+        setTitle("Электронная библиотека");
         setSize(1000,700);
+        setLocationRelativeTo(null);
+        setResizable(false);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         horizontalBox.add(Box.createHorizontalGlue());
@@ -48,38 +51,33 @@ public class MainFrame extends JFrame {
 
         });
 
-        setLocationRelativeTo(null);
-        setResizable(false);
         setVisible(true);
     }
 
     public int authorization(){
 
         try {
-            StringBuilder up = new StringBuilder();
             for(int i = 0; i < authorizationPanel.passwordField.getPassword().length; i++){
-                up.append(authorizationPanel.passwordField.getPassword()[i]);
+                inputPassword.append(authorizationPanel.passwordField.getPassword()[i]);
             }
 
             connection = DriverManager.getConnection(url, user, password);
-            stmt = connection.createStatement();
+            statement = connection.createStatement();
             query = "select * from users";
-            rs = stmt.executeQuery(query);
-            while (rs.next()){
+            resultSet = statement.executeQuery(query);
+            while (resultSet.next()){
 
-                String login = rs.getString("user_login");
-                String password = rs.getString("user_password");
+                String login = resultSet.getString("user_login");
+                String password = resultSet.getString("user_password");
 
-                if(Objects.equals(login, authorizationPanel.loginField.getText()) && Objects.equals(password, up.toString())){
-                    return rs.getInt("user_role");
+                if(Objects.equals(login, authorizationPanel.loginField.getText()) && Objects.equals(password, inputPassword.toString())){
+                    return resultSet.getInt("user_role");
                 }
             }
-
             return 0;
         }
         catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
     }
-
 }
