@@ -3,7 +3,7 @@ package Windows;
 import javax.swing.*;
 
 public class AdminPanel extends JPanel {
-
+    JButton addBook = new JButton("Добавить книгу");
     public AdminPanel(){
 
         String[] columnNames = {"Название книги", "Описание", "Автор"};
@@ -16,6 +16,9 @@ public class AdminPanel extends JPanel {
 
         JScrollPane scrPanel = new JScrollPane(table);
         add(scrPanel);
+
+
+        add(addBook);
 
         setVisible(true);
     }
