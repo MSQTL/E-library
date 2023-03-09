@@ -1,17 +1,15 @@
 package Windows;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.image.RenderedImage;
 import java.io.*;
-import java.nio.Buffer;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class MainFrame extends JFrame {
     String url = "jdbc:mysql://localhost:3306/e_library";
     String user = "root";
-    String password = "1234";
+    String password = "2802";
     Connection connection;
     Statement statement;
     ResultSet resultSet;
@@ -19,8 +17,6 @@ public class MainFrame extends JFrame {
     AuthorizationPanel authorizationPanel = new AuthorizationPanel();
     AdminPanel adminPanel = new AdminPanel();
     UserPanel userPanel = new UserPanel();
-    Box verticalBox = Box.createVerticalBox();
-    Box horizontalBox = Box.createHorizontalBox();
     public MainFrame(){
 
         setTitle("Электронная библиотека");
@@ -29,35 +25,29 @@ public class MainFrame extends JFrame {
         setResizable(false);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        horizontalBox.add(Box.createHorizontalGlue());
-        horizontalBox.add(verticalBox);
-        verticalBox.add(Box.createVerticalGlue());
-        verticalBox.add(authorizationPanel);
-        verticalBox.add(Box.createVerticalGlue());
-        horizontalBox.add(Box.createHorizontalGlue());
-
-        setContentPane(horizontalBox);
+        setContentPane(authorizationPanel);
 
         adminPanel.addBook.addActionListener(e -> addBook());
+        adminPanel.exit.addActionListener(e -> exit());
         userPanel.searchButton.addActionListener(e -> searchBook());
+        userPanel.exit.addActionListener(e -> exit());
         authorizationPanel.welcomeButton.addActionListener(e -> {
 
             int role = authorization();
 
             if(role == 1){
                 authorizationPanel.setVisible(false);
-                verticalBox.add(adminPanel);
+                setContentPane(adminPanel);
+                adminPanel.setVisible(true);
             } else if (role == 2) {
                 authorizationPanel.setVisible(false);
                 setContentPane(userPanel);
+                userPanel.setVisible(true);
             } else {
                 System.out.println("Invalid user!");
             }
 
         });
-
-
-
 
         setVisible(true);
     }
@@ -80,9 +70,19 @@ public class MainFrame extends JFrame {
                 String password = resultSet.getString("user_password");
 
                 if(Objects.equals(login, authorizationPanel.loginField.getText()) && Objects.equals(password, inputPassword.toString())){
+                    authorizationPanel.loginField.setText(null);
+                    authorizationPanel.passwordField.setText(null);
+
                     return resultSet.getInt("user_role");
                 }
             }
+
+            authorizationPanel.loginField.setText(null);
+            authorizationPanel.passwordField.setText(null);
+            connection.close();
+            resultSet.close();
+            statement.close();
+
             return 0;
         }
         catch (SQLException ex) {
@@ -94,45 +94,78 @@ public class MainFrame extends JFrame {
         try
         {
             connection = DriverManager.getConnection(url, user, password);
-
-            PreparedStatement ps = null;
-            File file = new File("C:/Users/student.OP9_WinDC.009/Desktop/ruslan.txt");
+            PreparedStatement ps;
+            File file = new File("C:/Users/sergm/Desktop/Война и мир.txt");
             FileInputStream is = new FileInputStream(file);
 
             ps = connection.prepareStatement("insert into books (book_name, book_author, book_text) values (?, ?, ?)");
-            ps.setString(1, "Руслан и Людмила");
-            ps.setString(2, "Пушкин");
+            ps.setString(1, "Война и мир, 1 и 2 том");
+            ps.setString(2, "Толстой");
             ps.setBinaryStream(3, is);
             ps.execute();
 
+            connection.close();
+            ps.close();
         }
         catch(IOException | SQLException ex){
             throw new RuntimeException(ex);
         }
     }
     public void searchBook(){
-
-        try {
-            PreparedStatement ps = connection.prepareStatement("select * from books where book_id = 1");
+        // код для вывода книги в текстареа
+        /*try {
+            connection = DriverManager.getConnection(url, user, password);
+            PreparedStatement ps = connection.prepareStatement("select * from books where book_id = 2");
             ResultSet rs = ps.executeQuery();
-            Blob blob;
 
-            if(rs.next()){
-                StringBuilder book = new StringBuilder();
-                System.out.println("1");
-                blob = rs.getBlob("book_text");
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(blob.getBinaryStream());
-                int c = -1;
-                while((c = bufferedInputStream.read()) != -1){
-                    book.append((char) c);
-                }
-
+            if (rs.next()){
                 String s = rs.getString("book_text");
                 userPanel.book.setText(s);
             }
+
+            connection.close();
+            ps.close();
+            rs.close();
         }
-        catch (SQLException | IOException ex){
+        catch (SQLException ex){
             throw new RuntimeException(ex);
+        }*/
+
+        try {
+//            userPanel.searchField.setText( userPanel.searchField.getText()
+//                    .replace("!", "!!")
+//                    .replace("%", "!%")
+//                    .replace("_", "!_")
+//                    .replace("[", "!["));
+            connection = DriverManager.getConnection(url, user, password);
+            PreparedStatement ps = connection.prepareStatement("SELECT book_name, book_author " +
+                    "FROM books WHERE book_name LIKE ?");
+            ps.setString(1, "%" + userPanel.searchField.getText() + "%");
+
+            ResultSet rs = ps.executeQuery();
+            String[][] books = new String[2][2];
+            int i = 0;
+            while (rs.next()){
+                books[i][0] = rs.getString("book_name");
+                books[i][1] = rs.getString("book_author");
+                i++;
+            }
+            System.out.println(Arrays.toString(books));
+            String[] columnNames = {"Название книги", "Автор"};
+            userPanel.books = new JTable(books, columnNames);
+            userPanel.add(userPanel.books);
         }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+    public void exit(){
+
+        adminPanel.setVisible(false);
+        userPanel.setVisible(false);
+        setContentPane(authorizationPanel);
+        authorizationPanel.setVisible(true);
+
     }
 }

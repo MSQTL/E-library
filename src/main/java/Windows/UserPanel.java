@@ -15,7 +15,7 @@ public class UserPanel extends JPanel {
     JRadioButton filterAuthor = new JRadioButton("по автору");
     JRadioButton filterName = new JRadioButton("по названию");
     JLabel results = new JLabel("Найденные книги:");
-    JTable books = new JTable(5, 3);
+    JTable books = new JTable();
     JTextArea book = new JTextArea();
     JScrollPane scrollPane = new JScrollPane(book);
     JButton exit = new JButton("Выход");
