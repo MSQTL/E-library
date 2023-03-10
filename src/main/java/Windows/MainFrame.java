@@ -1,22 +1,24 @@
 package Windows;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.io.*;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Vector;
 
 public class MainFrame extends JFrame {
     String url = "jdbc:mysql://localhost:3306/e_library";
     String user = "root";
-    String password = "2802";
+    String password = "1234";
     Connection connection;
     Statement statement;
     ResultSet resultSet;
     String query;
     AuthorizationPanel authorizationPanel = new AuthorizationPanel();
     AdminPanel adminPanel = new AdminPanel();
-    UserPanel userPanel = new UserPanel();
+    UserPanel userPanel;
     public MainFrame(){
 
         setTitle("Электронная библиотека");
@@ -29,8 +31,7 @@ public class MainFrame extends JFrame {
 
         adminPanel.addBook.addActionListener(e -> addBook());
         adminPanel.exit.addActionListener(e -> exit());
-        userPanel.searchButton.addActionListener(e -> searchBook());
-        userPanel.exit.addActionListener(e -> exit());
+
         authorizationPanel.welcomeButton.addActionListener(e -> {
 
             int role = authorization();
@@ -41,12 +42,13 @@ public class MainFrame extends JFrame {
                 adminPanel.setVisible(true);
             } else if (role == 2) {
                 authorizationPanel.setVisible(false);
+                userPanel = new UserPanel();
                 setContentPane(userPanel);
                 userPanel.setVisible(true);
+                userPanel.exit.addActionListener(ex -> exit());
             } else {
                 System.out.println("Invalid user!");
             }
-
         });
 
         setVisible(true);
@@ -77,8 +79,6 @@ public class MainFrame extends JFrame {
                 }
             }
 
-            authorizationPanel.loginField.setText(null);
-            authorizationPanel.passwordField.setText(null);
             connection.close();
             resultSet.close();
             statement.close();
@@ -90,17 +90,21 @@ public class MainFrame extends JFrame {
         }
     }
     public void addBook(){
-
         try
         {
             connection = DriverManager.getConnection(url, user, password);
             PreparedStatement ps;
-            File file = new File("C:/Users/sergm/Desktop/Война и мир.txt");
+
+            String path = adminPanel.bookPath.getText();
+            String author = adminPanel.bookAuthor.getText();
+            String name = adminPanel.bookName.getText();
+
+            File file = new File(path);
             FileInputStream is = new FileInputStream(file);
 
             ps = connection.prepareStatement("insert into books (book_name, book_author, book_text) values (?, ?, ?)");
-            ps.setString(1, "Война и мир, 1 и 2 том");
-            ps.setString(2, "Толстой");
+            ps.setString(1, name);
+            ps.setString(2, author);
             ps.setBinaryStream(3, is);
             ps.execute();
 
@@ -110,55 +114,6 @@ public class MainFrame extends JFrame {
         catch(IOException | SQLException ex){
             throw new RuntimeException(ex);
         }
-    }
-    public void searchBook(){
-        // код для вывода книги в текстареа
-        /*try {
-            connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement ps = connection.prepareStatement("select * from books where book_id = 2");
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()){
-                String s = rs.getString("book_text");
-                userPanel.book.setText(s);
-            }
-
-            connection.close();
-            ps.close();
-            rs.close();
-        }
-        catch (SQLException ex){
-            throw new RuntimeException(ex);
-        }*/
-
-        try {
-//            userPanel.searchField.setText( userPanel.searchField.getText()
-//                    .replace("!", "!!")
-//                    .replace("%", "!%")
-//                    .replace("_", "!_")
-//                    .replace("[", "!["));
-            connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement ps = connection.prepareStatement("SELECT book_name, book_author " +
-                    "FROM books WHERE book_name LIKE ?");
-            ps.setString(1, "%" + userPanel.searchField.getText() + "%");
-
-            ResultSet rs = ps.executeQuery();
-            String[][] books = new String[2][2];
-            int i = 0;
-            while (rs.next()){
-                books[i][0] = rs.getString("book_name");
-                books[i][1] = rs.getString("book_author");
-                i++;
-            }
-            System.out.println(Arrays.toString(books));
-            String[] columnNames = {"Название книги", "Автор"};
-            userPanel.books = new JTable(books, columnNames);
-            userPanel.add(userPanel.books);
-        }
-        catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
     }
     public void exit(){
 

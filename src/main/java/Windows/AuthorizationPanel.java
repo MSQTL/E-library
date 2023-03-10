@@ -9,6 +9,8 @@ public class AuthorizationPanel extends JPanel {
     Font text = new Font("Century Gothic", Font.PLAIN, 20);
     Font button = new Font("Century Gothic", Font.ITALIC, 18);
     Font head = new Font("Century Gothic",Font.PLAIN, 25);
+
+    Font field = new Font("MV Boli", Font.PLAIN, 17);
     Color color = new Color(37, 114, 247);
     JLabel header = new JLabel("<html><u>Вход в систему</u></html>");
     JLabel loginLabel = new JLabel("Введите Ваш логин: ");
@@ -20,24 +22,27 @@ public class AuthorizationPanel extends JPanel {
 
         setLayout(null);
         setPreferredSize(panelSize);
+        int y = 150;
 
-        header.setBounds(110, 30, 200, 25);
+        header.setBounds(380, 30 + y, 200, 25);
         header.setFont(head);
 
-        loginLabel.setBounds(10, 100, 230, 25);
+        loginLabel.setBounds(280, 100 + y, 230, 25);
         loginLabel.setFont(text);
 
-        loginField.setBounds(260, 100, 165, 30);
+        loginField.setBounds(530, 100 + y, 165, 30);
+        loginField.setFont(field);
         loginField.setPreferredSize(fieldSize);
 
-        passwordLabel.setBounds(10, 165, 230, 25);
+        passwordLabel.setBounds(280, 165 + y, 230, 25);
         passwordLabel.setFont(text);
 
         passwordField.setEchoChar('*');
-        passwordField.setBounds(260, 165, 165, 30);
+        passwordField.setBounds(530, 165 + y, 165, 30);
+        passwordField.setFont(field);
         passwordField.setPreferredSize(fieldSize);
 
-        welcomeButton.setBounds(260, 220,165, 25);
+        welcomeButton.setBounds(530, 220 + y,165, 30);
         welcomeButton.setHorizontalTextPosition(JButton.CENTER);
         welcomeButton.setVerticalTextPosition(JButton.CENTER);
         welcomeButton.setFont(button);
