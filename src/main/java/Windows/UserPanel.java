@@ -11,7 +11,7 @@ import java.util.Vector;
 public class UserPanel extends JPanel {
     String url = "jdbc:mysql://localhost:3306/e_library";
     String user = "root";
-    String password = "1234";
+    String password = "2802";
     Connection connection;
     DefaultTableModel tableModel = new DefaultTableModel();
     Box mainBox = Box.createHorizontalBox();
@@ -45,7 +45,7 @@ public class UserPanel extends JPanel {
             }
             while (rs.next()){
 
-                Vector<String> rows = new Vector<String>();
+                Vector<String> rows = new Vector<>();
                 rows.add(Integer.toString(rs.getInt(1)));
                 for(int col = 2; col <= resultSetMetaData.getColumnCount(); col++){
                     rows.add(rs.getString(col));

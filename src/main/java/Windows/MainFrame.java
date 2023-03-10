@@ -1,24 +1,20 @@
 package Windows;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.io.*;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.Objects;
-import java.util.Vector;
 
 public class MainFrame extends JFrame {
     String url = "jdbc:mysql://localhost:3306/e_library";
     String user = "root";
-    String password = "1234";
+    String password = "2802";
     Connection connection;
     Statement statement;
     ResultSet resultSet;
     String query;
     AuthorizationPanel authorizationPanel = new AuthorizationPanel();
     AdminPanel adminPanel = new AdminPanel();
-    UserPanel userPanel;
+    UserPanel userPanel = new UserPanel();
     public MainFrame(){
 
         setTitle("Электронная библиотека");
@@ -29,7 +25,6 @@ public class MainFrame extends JFrame {
 
         setContentPane(authorizationPanel);
 
-        adminPanel.addBook.addActionListener(e -> addBook());
         adminPanel.exit.addActionListener(e -> exit());
 
         authorizationPanel.welcomeButton.addActionListener(e -> {
@@ -71,7 +66,8 @@ public class MainFrame extends JFrame {
                 String login = resultSet.getString("user_login");
                 String password = resultSet.getString("user_password");
 
-                if(Objects.equals(login, authorizationPanel.loginField.getText()) && Objects.equals(password, inputPassword.toString())){
+                if(Objects.equals(login, authorizationPanel.loginField.getText())
+                        && Objects.equals(password, inputPassword.toString())){
                     authorizationPanel.loginField.setText(null);
                     authorizationPanel.passwordField.setText(null);
 
@@ -86,32 +82,6 @@ public class MainFrame extends JFrame {
             return 0;
         }
         catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-    public void addBook(){
-        try
-        {
-            connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement ps;
-
-            String path = adminPanel.bookPath.getText();
-            String author = adminPanel.bookAuthor.getText();
-            String name = adminPanel.bookName.getText();
-
-            File file = new File(path);
-            FileInputStream is = new FileInputStream(file);
-
-            ps = connection.prepareStatement("insert into books (book_name, book_author, book_text) values (?, ?, ?)");
-            ps.setString(1, name);
-            ps.setString(2, author);
-            ps.setBinaryStream(3, is);
-            ps.execute();
-
-            connection.close();
-            ps.close();
-        }
-        catch(IOException | SQLException ex){
             throw new RuntimeException(ex);
         }
     }
