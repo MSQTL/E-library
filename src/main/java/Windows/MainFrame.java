@@ -7,7 +7,7 @@ import java.util.Objects;
 public class MainFrame extends JFrame {
     String url = "jdbc:mysql://localhost:3306/e_library";
     String user = "root";
-    String password = "2802";
+    String password = "1234";
     Connection connection;
     Statement statement;
     ResultSet resultSet;

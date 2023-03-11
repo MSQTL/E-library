@@ -11,19 +11,15 @@ import java.util.Vector;
 public class UserPanel extends JPanel {
     String url = "jdbc:mysql://localhost:3306/e_library";
     String user = "root";
-    String password = "2802";
+    String password = "1234";
     Connection connection;
+    Font text = new Font("Century Gothic", Font.PLAIN, 20);
+    Font textName = new Font("Times New Roman", Font.PLAIN, 20);
+    Font textBook = new Font("Times New Roman", Font.PLAIN, 15);
+    Color button = new Color(87, 45, 7);
     DefaultTableModel tableModel = new DefaultTableModel();
-    Box mainBox = Box.createHorizontalBox();
-    Box leftBox = Box.createVerticalBox();
-    Box field_button = Box.createHorizontalBox();
-    Box filterBox = Box.createHorizontalBox();
-    JLabel search = new JLabel("Поиск");
     JTextField searchField = new JTextField();
-    JButton searchButton = new JButton("Найти");
-    JRadioButton filterAuthor = new JRadioButton("по автору");
-    JRadioButton filterName = new JRadioButton("по названию");
-    JLabel results = new JLabel("Найденные книги:");
+    JLabel nameBook = new JLabel();
     JTable books;
     JScrollPane scrollPaneForBooks;
     JTextArea book = new JTextArea();
@@ -31,9 +27,72 @@ public class UserPanel extends JPanel {
     JButton exit = new JButton("Выход");
     public UserPanel(){
 
+        connection();
+
+        setLayout(null);
+        scrollPaneForBooks = new JScrollPane(books);
+
+        book.setColumns(55);
+        book.setRows(29);
+        book.setLineWrap(true);
+        book.setWrapStyleWord(true);
+        book.setEditable(false);
+
+        nameBook.setBounds(470, 30, 200, 30);
+        nameBook.setFont(textName);
+
+        scrollPaneForBooks.setBounds(20, 60, 430, 300);
+        scrollPane.setBounds(470, 60, 500, 525);
+
+        exit.setBounds(870, 600, 100, 30);
+        exit.setBackground(button);
+        exit.setForeground(Color.white);
+        exit.setFont(text);
+
+        books.setFont(text);
+        books.setRowHeight(30);
+        book.setFont(textBook);
+
+        add(nameBook);
+        add(scrollPaneForBooks);
+        add(scrollPane);
+        add(exit);
+
+        setVisible(true);
+
+        books.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(e.getClickCount() == 1){
+                    int bookIndex = Integer.parseInt((String) books.getValueAt(books.getSelectedRow(), 0));
+                    System.out.println(bookIndex);
+
+                    try {
+                        connection = DriverManager.getConnection(url, user, password);
+                        PreparedStatement ps = connection.prepareStatement("SELECT book_name, book_text " +
+                                "FROM books WHERE ID = ?");
+                        ps.setInt(1, bookIndex);
+                        ResultSet rs = ps.executeQuery();
+                        while (rs.next()){
+                            nameBook.setText(rs.getString("book_name"));
+                            book.setText(rs.getString("book_text"));
+                        }
+
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+                }
+
+            }
+        });
+
+    }
+
+    void connection(){
         try {
             connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement ps = connection.prepareStatement("SELECT book_id, book_name, book_author " +
+            PreparedStatement ps = connection.prepareStatement("SELECT ID, book_name, book_author " +
                     "FROM books WHERE book_name LIKE ?");
             ps.setString(1, "%" + searchField.getText() + "%");
 
@@ -54,72 +113,13 @@ public class UserPanel extends JPanel {
             }
 
             books = new JTable(tableModel);
+            books.getColumnModel().getColumn(0).setMaxWidth(20);
+            books.getColumnModel().getColumn(2).setMinWidth(100);
+            books.getColumnModel().getColumn(2).setMaxWidth(200);
+
         }
         catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        books.setSize(300, 200);
-        scrollPaneForBooks = new JScrollPane(books);
-        searchField.setMaximumSize(new Dimension(250, 25));
-
-        book.setColumns(55);
-        book.setRows(40);
-        book.setLineWrap(true);
-        book.setWrapStyleWord(true);
-        book.setEditable(false);
-
-        field_button.add(searchField);
-        field_button.add(searchButton);
-
-        filterBox.add(filterAuthor);
-        filterBox.add(filterName);
-
-        leftBox.add(Box.createVerticalStrut(30));
-        leftBox.add(search);
-        leftBox.add(field_button);
-        leftBox.add(filterBox);
-        leftBox.add(Box.createVerticalStrut(30));
-        leftBox.add(results);
-        leftBox.add(scrollPaneForBooks);
-        leftBox.add(Box.createVerticalGlue());
-
-        mainBox.add(Box.createHorizontalStrut(20));
-        mainBox.add(leftBox);
-        mainBox.add(Box.createHorizontalStrut(20));
-        mainBox.add(scrollPane);
-        mainBox.add(Box.createHorizontalStrut(20));
-        mainBox.add(exit);
-        mainBox.add(Box.createHorizontalStrut(20));
-
-        books.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount() == 1){
-                    int bookIndex = Integer.parseInt((String) books.getValueAt(books.getSelectedRow(), 0));
-                    System.out.println(bookIndex);
-
-                    try {
-                        connection = DriverManager.getConnection(url, user, password);
-                        PreparedStatement ps = connection.prepareStatement("SELECT book_text " +
-                                "FROM books WHERE book_id = ?");
-                        ps.setInt(1, bookIndex);
-                        ResultSet rs = ps.executeQuery();
-                        while (rs.next()){
-                            book.setText(rs.getString("book_text"));
-                        }
-
-                    } catch (SQLException ex) {
-                        throw new RuntimeException(ex);
-                    }
-
-                }
-            }
-        });
-
-        add(mainBox);
-
-        setVisible(true);
     }
-
 }

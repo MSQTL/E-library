@@ -9,7 +9,6 @@ public class AuthorizationPanel extends JPanel {
     Font text = new Font("Century Gothic", Font.PLAIN, 20);
     Font button = new Font("Century Gothic", Font.ITALIC, 18);
     Font head = new Font("Century Gothic",Font.PLAIN, 25);
-
     Font field = new Font("MV Boli", Font.PLAIN, 17);
     Color color = new Color(37, 114, 247);
     JLabel header = new JLabel("<html><u>Вход в систему</u></html>");

@@ -12,10 +12,11 @@ import java.util.Vector;
 public class AdminPanel extends JPanel {
     String url = "jdbc:mysql://localhost:3306/e_library";
     String user = "root";
-    String password = "2802";
+    String password = "1234";
     Connection connection;
-    Color color = new Color(139, 69, 19, 85);
+    Color color = new Color(37, 114, 247);
     Font text = new Font("Century Gothic", Font.PLAIN, 20);
+    Font fontTB = new Font("Yu Gothic UI Light", Font.PLAIN, 17);
     DefaultTableModel tableModelBooks = new DefaultTableModel();
     DefaultTableModel tableModelUsers = new DefaultTableModel();
     JTable tableBooks;
@@ -23,9 +24,7 @@ public class AdminPanel extends JPanel {
     JScrollPane scrPanelBooks;
     JScrollPane scrPanelUsers;
     JButton addBook = new JButton("Добавить книгу");
-    JButton updateBook = new JButton("Обновить");
     JButton addUser = new JButton("Добавить пользователя");
-    JButton updateUser = new JButton("Обновить");
     JButton exit = new JButton("Выход");
     JTextField bookPath = new JTextField("Путь");
     JTextField bookAuthor = new JTextField("Автор");
@@ -38,28 +37,37 @@ public class AdminPanel extends JPanel {
 
         setLayout(null);
 
-        connection();
+        connectionForTableBooks();
+        connectionForTableUsers();
 
         tableBooks.setFont(text);
         tableBooks.setRowHeight(30);
 
-        bookPath.setBounds(10, 20, 100, 20);
-        bookAuthor.setBounds(120, 20, 100, 20);
-        bookName.setBounds(230, 20, 100, 20);
-        addBook.setBounds(340, 20, 150, 20);
-        updateBook.setBounds(500, 20, 150, 20);
-
-        login.setBounds(10, 20, 100, 20);
-        pass.setBounds(120, 20, 100, 20);
-        addUser.setBounds(230, 20, 100, 20);
-
-        exit.setBounds(780, 600, 100, 30);
-
+        bookPath.setBounds(10, 30, 200, 30);
+        bookAuthor.setBounds(220, 30, 200, 30);
+        bookName.setBounds(430, 30, 200, 30);
+        addBook.setBounds(640, 30, 150, 30);
         scrPanelBooks = new JScrollPane(tableBooks);
-        scrPanelBooks.setBounds(10, 50, 940, 300);
+        scrPanelBooks.setBounds(10, 80, 940, 300);
+
+        tableUsers.setFont(text);
+        tableUsers.setRowHeight(30);
+
+        login.setBounds(10, 30, 200, 30);
+        pass.setBounds(220, 30, 200, 30);
+        addUser.setBounds(430, 30, 200, 30);
+        scrPanelUsers = new JScrollPane(tableUsers);
+        scrPanelUsers.setBounds(10, 80, 940, 300);
+
+        exit.setBounds(870, 590, 100, 30);
+        exit.setBackground(color);
+        exit.setForeground(Color.white);
+        exit.setFont(text);
 
         tb = new JTabbedPane(JTabbedPane.TOP);
         tb.setBounds(10, 0, 960, 580);
+        tb.setFont(fontTB);
+
         JPanel books = new JPanel();
 
         books.setLayout(null);
@@ -68,9 +76,6 @@ public class AdminPanel extends JPanel {
         books.add(bookAuthor);
         books.add(bookName);
         books.add(addBook);
-        books.add(updateBook);
-
-        tb.addTab("Книги", books);
 
         JPanel users = new JPanel();
 
@@ -78,21 +83,33 @@ public class AdminPanel extends JPanel {
         users.add(login);
         users.add(pass);
         users.add(addUser);
+        users.add(scrPanelUsers);
 
+        tb.addTab("Книги", books);
         tb.addTab("Пользователи", users);
 
         add(tb);
         add(exit);
         setVisible(true);
 
-        updateBook.addActionListener(e -> updateBook());
-        addBook.addActionListener(e -> addBook());
+        addBook.addActionListener(e -> {
+
+            addBook();
+            updateBook();
+        });
+
+        addUser.addActionListener(e -> {
+
+            addUser();
+            updateUser();
+        });
     }
 
-    void connection(){
+    void connectionForTableBooks(){
         try {
+
             connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement ps = connection.prepareStatement("SELECT book_id, book_name, book_author " +
+            PreparedStatement ps = connection.prepareStatement("SELECT ID, book_name, book_author " +
                     "FROM books");
 
             ResultSet rs = ps.executeQuery();
@@ -122,7 +139,7 @@ public class AdminPanel extends JPanel {
         try {
             DefaultTableModel u = new DefaultTableModel();
             connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement ps = connection.prepareStatement("SELECT book_id, book_name, book_author " +
+            PreparedStatement ps = connection.prepareStatement("SELECT ID, book_name, book_author " +
                     "FROM books");
 
             ResultSet rs = ps.executeQuery();
@@ -172,6 +189,90 @@ public class AdminPanel extends JPanel {
             ps.close();
         }
         catch(IOException | SQLException ex){
+            throw new RuntimeException(ex);
+        }
+    }
+    void connectionForTableUsers(){
+        try {
+
+            connection = DriverManager.getConnection(url, user, password);
+            PreparedStatement ps = connection.prepareStatement("SELECT user_id, user_login, user_password, user_role " +
+                    "FROM users");
+
+            ResultSet rs = ps.executeQuery();
+
+            ResultSetMetaData resultSetMetaData = rs.getMetaData();
+            for(int col = 1; col <= resultSetMetaData.getColumnCount(); col++) {
+                tableModelUsers.addColumn(resultSetMetaData.getColumnName(col));
+            }
+            while (rs.next()){
+
+                Vector<String> rows = new Vector<>();
+                rows.add(Integer.toString(rs.getInt(1)));
+                for(int col = 2; col <= resultSetMetaData.getColumnCount(); col++){
+                    rows.add(rs.getString(col));
+                }
+                tableModelUsers.addRow(rows);
+            }
+
+            tableUsers = new JTable(tableModelUsers);
+            connection.close();
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    void addUser(){
+
+        try
+        {
+            connection = DriverManager.getConnection(url, user, password);
+            PreparedStatement ps;
+
+            String loginText = login.getText();
+            String passText = pass.getText();
+
+            ps = connection.prepareStatement("insert into users (user_login, user_password, user_role) " +
+                    "values (?, ?, 2)");
+            ps.setString(1, loginText);
+            ps.setString(2, passText);
+            ps.execute();
+
+            connection.close();
+            ps.close();
+        }
+        catch(SQLException ex){
+            throw new RuntimeException(ex);
+        }
+    }
+    void updateUser(){
+
+        try {
+            DefaultTableModel u = new DefaultTableModel();
+            connection = DriverManager.getConnection(url, user, password);
+            PreparedStatement ps = connection.prepareStatement("SELECT user_id, user_login, user_password, user_role " +
+                    "FROM users");
+
+            ResultSet rs = ps.executeQuery();
+
+            ResultSetMetaData resultSetMetaData = rs.getMetaData();
+            for(int col = 1; col <= resultSetMetaData.getColumnCount(); col++) {
+                u.addColumn(resultSetMetaData.getColumnName(col));
+            }
+            while (rs.next()){
+
+                Vector<String> rows = new Vector<>();
+                rows.add(Integer.toString(rs.getInt(1)));
+                for(int col = 2; col <= resultSetMetaData.getColumnCount(); col++){
+                    rows.add(rs.getString(col));
+                }
+                u.addRow(rows);
+            }
+
+            tableUsers.setModel(u);
+            connection.close();
+        }
+        catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
     }
