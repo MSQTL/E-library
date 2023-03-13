@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="javafx-preloader" name="E-library">
+    <output-path>$PROJECT_DIR$/out/artifacts/E_library</output-path>
+    <root id="archive" name="E-library.jar">
+      <element id="archive" name="E_library.jar">
+        <element id="module-output" name="E-library" />
+      </element>
+    </root>
+  </artifact>
+</component>

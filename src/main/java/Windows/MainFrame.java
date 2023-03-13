@@ -15,9 +15,11 @@ public class MainFrame extends JFrame {
     AuthorizationPanel authorizationPanel = new AuthorizationPanel();
     AdminPanel adminPanel = new AdminPanel();
     UserPanel userPanel = new UserPanel();
+    ImageIcon icon = new ImageIcon("C:\\Users\\student.OP9_WinDC.009\\Desktop\\icon.png");
     public MainFrame(){
 
         setTitle("Электронная библиотека");
+        setIconImage(icon.getImage());
         setSize(1000,700);
         setLocationRelativeTo(null);
         setResizable(false);

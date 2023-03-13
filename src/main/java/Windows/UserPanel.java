@@ -5,6 +5,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.Serial;
 import java.sql.*;
 import java.util.Vector;
 
@@ -28,7 +29,6 @@ public class UserPanel extends JPanel {
     public UserPanel(){
 
         connection();
-
         setLayout(null);
         scrollPaneForBooks = new JScrollPane(books);
 
@@ -67,7 +67,8 @@ public class UserPanel extends JPanel {
                     int bookIndex = Integer.parseInt((String) books.getValueAt(books.getSelectedRow(), 0));
                     System.out.println(bookIndex);
 
-                    try {
+                    try
+                    {
                         connection = DriverManager.getConnection(url, user, password);
                         PreparedStatement ps = connection.prepareStatement("SELECT book_name, book_text " +
                                 "FROM books WHERE ID = ?");
@@ -77,18 +78,14 @@ public class UserPanel extends JPanel {
                             nameBook.setText(rs.getString("book_name"));
                             book.setText(rs.getString("book_text"));
                         }
-
-                    } catch (SQLException ex) {
+                    }
+                    catch (SQLException ex) {
                         throw new RuntimeException(ex);
                     }
-
                 }
-
             }
         });
-
     }
-
     void connection(){
         try {
             connection = DriverManager.getConnection(url, user, password);
@@ -111,12 +108,16 @@ public class UserPanel extends JPanel {
                 }
                 tableModel.addRow(rows);
             }
-
-            books = new JTable(tableModel);
+            books = new JTable(tableModel) {
+                @Serial
+                private static final long serialVersionUID = 1L;
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
             books.getColumnModel().getColumn(0).setMaxWidth(20);
             books.getColumnModel().getColumn(2).setMinWidth(100);
             books.getColumnModel().getColumn(2).setMaxWidth(200);
-
         }
         catch (SQLException e) {
             throw new RuntimeException(e);
